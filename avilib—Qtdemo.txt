@@ -1,0 +1,63 @@
+#include <QCoreApplication>
+#include <QDebug>
+#include <QDateTime>
+#include <QDir>
+#include <QFileInfoList>
+#include <QImage>
+#define _CPP 0
+#if _CPP
+extern "C"
+{
+#endif
+#include <avilib.h>
+#if _CPP
+}
+#endif
+int main(int argc, char *argv[])
+{
+    QCoreApplication a(argc, argv);
+
+    QString aviFileSavePath = "/mnt/";
+    //QString aviFileSavePath = "/home/wyy/Desktop/";
+    QString tmpFile = aviFileSavePath + QDateTime::currentDateTime().toString("yyyy-MM-dd-hh:mm:ss") + ".avi";
+    qDebug() << tmpFile;
+    char *filename = tmpFile.toUtf8().data();
+
+    avi_t *out_fd = AVI_open_output_file(filename);
+
+    if(out_fd == NULL)
+    {
+        qDebug() << "open file erro";
+    }
+
+
+#if 1
+    AVI_set_video(out_fd,480,270,25,"MJPG");
+    int keyfame = 1;
+
+    QDir dir("/mnt/image/");
+    QFileInfoList file_list = dir.entryInfoList(QDir::Files | QDir::Hidden | QDir::NoSymLinks);
+    qDebug() << file_list.size();
+    for(int i = 0; i < file_list.size(); i++)
+    {
+         QString name = file_list.at(i).absoluteFilePath();
+#if 1
+         QFile file(name);
+         file.open(QIODevice::ReadWrite);
+         qDebug() << name << " " << file.size();
+         AVI_write_frame(out_fd,file.readAll().data(),file.size(),keyfame);
+         file.close();
+#endif
+         if(keyfame == 1)
+             keyfame=0;
+    }
+
+
+    AVI_close(out_fd);
+#endif
+
+    return 0;
+
+
+}
+
